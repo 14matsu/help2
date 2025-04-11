@@ -61,8 +61,8 @@ def calculate_shift_count(shift_data):
             return 0.5
         return 0
 
-    # 変更後 - map関数を使用
-    return shift_data.map(count_shift).sum()
+    # 変更前
+    return shift_data.applymap(count_shift).sum()
 
 def display_shift_table(selected_year, selected_month):
     start_date = pd.Timestamp(selected_year, selected_month, 16)
