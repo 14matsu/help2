@@ -13,29 +13,31 @@ if not os.environ.get('STREAMLIT_CLOUD'):
 class SupabaseDB:
     def __init__(self):
         try:
-            # .envファイルからの読み込みを優先
-            load_dotenv()
-            supabase_url = os.getenv("SUPABASE_URL")
-            supabase_key = os.getenv("SUPABASE_KEY")
+            # デプロイ環境ではst.secretsから読み込む
+            # ローカル環境では.envから読み込む
+            supabase_url = None
+            supabase_key = None
             
-            # 値が取得できなければStreamlit Secretsを試す
-            if not supabase_url or not supabase_key:
+            # まずSecrets APIから取得を試みる
+            try:
                 if "database" in st.secrets:
                     supabase_url = st.secrets["database"]["supabase_url"]
                     supabase_key = st.secrets["database"]["supabase_key"]
-                
+            except:
+                pass  # st.secretsが使えない場合は次の方法へ
+            
+            # Secretsから取得できなかった場合は.envから読み込む
+            if not supabase_url or not supabase_key:
+                load_dotenv()
+                supabase_url = os.getenv("SUPABASE_URL")
+                supabase_key = os.getenv("SUPABASE_KEY")
+            
+            # 接続情報がない場合はエラー
             if not supabase_url or not supabase_key:
                 st.error("データベース接続情報が見つかりません")
-                st.write("Current values:", {
-                    "url_exists": bool(supabase_url),
-                    "key_exists": bool(supabase_key)
-                })
                 raise Exception("Supabase の認証情報が設定されていません")
             
-            # デバッグ用に最初の数文字だけ表示
-            st.write(f"URL: {supabase_url[:10]}...")
-            st.write(f"Key: {supabase_key[:5]}...")
-            
+            # デバッグ表示は削除（デプロイには不要）
             self.supabase: Client = create_client(supabase_url, supabase_key)
             
         except Exception as e:
