@@ -120,10 +120,6 @@ def update_session_state_shifts(shifts):
         if date in st.session_state.shift_data.index:
             for employee, shift in row.items():
                 if pd.notna(shift):
-                    # 変更後 - DataFrameのデータ型を文字列に事前に変換する
-                    if isinstance(st.session_state.shift_data, pd.DataFrame):
-                        if st.session_state.shift_data.dtypes[employee] != 'object':
-                            st.session_state.shift_data[employee] = st.session_state.shift_data[employee].astype('object')
                     st.session_state.shift_data.loc[date, employee] = str(shift)
                 else:
                     st.session_state.shift_data.loc[date, employee] = '-'
